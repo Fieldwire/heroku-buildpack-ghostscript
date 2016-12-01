@@ -1,20 +1,24 @@
 #!/usr/bin/env bash
 # bin/compile <build-dir> <cache-dir>
 
-echo "-----> Installing Ghostscript 9.19 using build directory $1"
+VERSION=9.19
+PACKAGE="https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs919/ghostscript-9.19.tar.gz"
 
+echo "-----> Installing Ghostscript" $VERSION
 BUILD_DIR=$1
-PACKAGE="https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs919/ghostpcl-9.19-linux-x86_64.tgz"
-BINARY="ghostpcl-9.19-linux-x86_64/gpcl6-919-linux_x86_64"
-LOCATION="$BUILD_DIR/vendor/gs"
 
-cd $BUILD_DIR
-mkdir -p $LOCATION/bin
-wget -O gs.tgz $PACKAGE # Couldn't get curl to work for some reason
-tar xvf gs.tgz
-mv $BINARY $LOCATION/bin/gs
+curl -L -O $PACKAGE -s
 
-echo "-----> Building runtime environment for Ghostscript to $LOCATION"
+echo "-----> Building runtime environment for Ghostscript"
 
-mkdir -p $BUILD_DIR/.profile.d
-echo "export PATH=\"\$HOME/vendor/gs/bin:\$PATH\"" > $BUILD_DIR/.profile.d/ghostscript.sh
+tar xzvf ghostscript-$VERSION.tar.gz
+cd ghostscript-$VERSION
+./configure --disable-cups --disable-gtk --with-drivers=FILES
+make
+cp bin/gs ~/bin
+
+echo "Ghostscript version:"
+gs --version
+
+cd ~
+rm -rf ghostscript-$VERSION*

@@ -1,24 +1,16 @@
 #!/usr/bin/env bash
 # bin/compile <build-dir> <cache-dir>
 
-VERSION=9.19
-PACKAGE="https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs919/ghostscript-9.19.tar.gz"
+echo "-----> Installing Ghostscript 9.19"
 
-echo "-----> Installing Ghostscript" $VERSION
 BUILD_DIR=$1
+PACKAGE="https://s3.amazonaws.com/fieldwire-heroku/ghostscript-9.19.tgz"
+LOCATION="$BUILD_DIR/vendor/gs"
 
-curl -L -O $PACKAGE -s
+mkdir -p $LOCATION
+curl $PACKAGE -s -o - | tar xzf - -C $LOCATION
 
 echo "-----> Building runtime environment for Ghostscript"
 
-tar xzvf ghostscript-$VERSION.tar.gz
-cd ghostscript-$VERSION
-./configure --disable-cups --disable-gtk --with-drivers=FILES
-make
-cp bin/gs ~/bin
-
-echo "Ghostscript version:"
-gs --version
-
-cd ~
-rm -rf ghostscript-$VERSION*
+mkdir -p $BUILD_DIR/.profile.d
+echo "export PATH=\"\$HOME/vendor/gs/bin:\$PATH\"" > $BUILD_DIR/.profile.d/ghostscript.sh
